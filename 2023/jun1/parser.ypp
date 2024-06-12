@@ -1,0 +1,152 @@
+%{
+
+#include <iostream>
+#include <map>
+#include <vector>
+#include <cstdlib>
+
+#include "utils.hpp"
+
+using namespace std;
+
+void yyerror(const char *msg) {
+    cerr << msg << endl;
+    exit(EXIT_FAILURE);
+}
+
+extern int yylex();
+
+map<string, vector<double>*> mapa;
+
+%}
+
+%union {
+    vector<double> *v;
+    double          d;
+    string          *s;
+}
+
+%type <v> E
+%type <v> NIZ_BROJEVA
+%type <v> NIZ_BROJEVAP
+
+%token vektor_tip
+%token print_token
+%token dupl_token
+%token coord_token
+%token <d> konstanta
+%token <s> id
+
+%left '+' '-'
+%left '*'
+%right 'x'
+%left '.'
+%right UNARNI_MINUS
+
+%%
+
+NIZ_NAREDBI: NAREDBA ';' NIZ_NAREDBI
+            |
+
+NAREDBA: vektor_tip NIZ_DEKLARACIJA
+    | E { cout << *$1 << endl; delete $1; }
+    | E '.' print_token '(' ')' %prec UNARNI_MINUS { 
+        cout << *$1 << endl;
+        delete $1;
+    }
+    | id '=' E {
+        if (mapa.find(*$1) != mapa.end()) {
+            delete mapa[*$1];
+        }
+        mapa[*$1] = new vector<double>(*$3);
+        delete $1;
+        delete $3;
+    }
+
+NIZ_DEKLARACIJA: DODELA ',' NIZ_DEKLARACIJA
+                | DODELA
+
+DODELA: id { 
+    mapa[*$1] = new vector<double>(); 
+    delete $1; 
+}
+    | id '=' E {
+        mapa[*$1] = new vector<double>(*$3);
+        delete $1;
+        delete $3;
+    }
+
+E: E '+' E {
+    $$ = new vector<double>(saberi_vektore(*$1, *$3));
+
+    delete $1;
+    delete $3;
+}
+ | E '-' E {
+    $$ = new vector<double>(oduzmi_vektore(*$1, *$3));
+
+    delete $1;
+    delete $3;
+ }
+ | '{' NIZ_BROJEVA '}' {
+    $$ = $2;
+ }
+ | '-' E %prec UNARNI_MINUS {
+    $$ = new vector<double>(negativni(*$2));
+    delete $2;
+ }
+ | id {
+    if (mapa.find(*$1) == mapa.end()) {
+        cerr << "PROMENJLJIVA NIJE TUUUU!" << endl;
+        delete $1;
+        exit(EXIT_FAILURE);
+    }
+    $$ = new vector<double>(*mapa[*$1]);
+    delete $1;
+ }
+| konstanta '*' E {
+    $$ = new vector<double>(pomnozi_skalarno($1, *$3));
+
+    delete $3;
+}
+| E 'x' E {
+    if ($1->size() != 3 || $3->size() != 3) {
+        cerr << "VEKTORI NISU ODG DIMENZIJA" << endl;
+
+        delete $1;
+        delete $3;
+        exit(EXIT_FAILURE);
+
+    }
+
+    vector<double> rez = vek_proizvod(*$1, *$3);
+    $$ = new vector<double>(rez);
+    delete $1;
+    delete $3;
+}
+| E '.' coord_token '(' id ')' {
+    $$ = new vector<double>(koord_mnozi(*$1, *mapa[*$5]));
+    delete $1;
+    delete $5;
+}
+| E '.' dupl_token '(' ')' {
+    $$ = new vector<double>(pomnozi_skalarno(2, *$1));
+    delete $1;
+}
+
+NIZ_BROJEVA: NIZ_BROJEVAP { $$ = $1; }
+            | { $$ = new vector<double>();}
+
+NIZ_BROJEVAP: NIZ_BROJEVAP ',' konstanta { $$ = $1; $$->push_back($3);}
+            | konstanta { $$ = new vector<double>(); $$->push_back($1); }
+
+%%
+
+int main() {
+    yyparse();
+    for (auto kv : mapa) {
+        delete kv.second;
+    }
+
+    return 0;
+}

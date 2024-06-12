@@ -1,0 +1,16 @@
+# Ignore all object files in all directories
+*.o
+
+# Ignore all .tab.hpp files in all directories
+*.tab.hpp
+
+# Ignore executables in all directories
+# This rule will ignore any file without an extension that has execute permissions
+# Note: This rule is more specific to Unix-like systems
+# If you have a known set of executables, list them explicitly
+# For generic executables with no extensions, the pattern may vary
+
+# Ignore all files with no extensions in all directories
+# Use a more specific pattern if needed for executables
+# Here, we're assuming executables are files without an extension
+# Use the `!*/` rule to prevent directories from being ignored

@@ -1,0 +1,236 @@
+
+%{
+
+#include <iostream>
+#include <cstdlib>
+#include <map>
+#include <vector>
+#include "naredbe.hpp"
+#include "complex.hpp"
+
+using namespace std;
+
+extern int yylex();
+
+void yyerror(const char *msg) {
+    cerr << "Sintaksicka greska: " << msg;
+    exit(EXIT_FAILURE);
+}
+
+map<string, Complex*> mapac;
+map<string, bool> mapab;
+map<string, vector<Complex>*> mapaa;
+
+%}
+
+%union {
+    Complex                 *c;
+    bool                    b;
+    vector<Complex>        *v;
+    vector<Naredba*>        *vn;
+    Naredba                 *n;
+    int                     i;
+    string                  *s;
+}
+
+%token complex_tip
+%token array_tip
+%token bool_tip
+%token print_token
+%token else_token
+%token if_token
+%token conj_token
+%token nejednako
+%token jednako
+%token <s> id
+%token <i> konstanta
+%token UNARNI_MINUS
+%token <s> string_literal
+
+%type <c> E
+%type <b> EB
+%type <v> NIZ_BROJEVA
+%type <v> NIZ_BROJEVAP
+%type <n> NAREDBAB
+%type <vn> NIZ_NAREDBIB
+
+%right jednako
+%right nejednako
+%left '+' '-'
+%right UNARNI_MINUS
+%left '.'
+
+
+
+%%
+
+NIZ_NAREDBI: NAREDBA '\n' NIZ_NAREDBI
+| 
+
+NAREDBA: complex_tip NIZ_DODELA
+| id '.' print_token '(' ')' {
+    if (mapac.find(*$1) == mapac.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete $1;
+        exit(EXIT_FAILURE);
+    }
+
+    mapac[*$1]->ispis();
+    delete $1;
+}
+| DODELA
+| '|' E '|' {
+    cout << $2->abs() << endl;
+    delete $2; 
+}
+| bool_tip NIZ_DODELAB
+| array_tip id '=' '{' NIZ_BROJEVA '}' { 
+    mapaa[*$2] = $5;
+}
+| if_token '(' EB ')' '{' '\n' NIZ_NAREDBIB '}' else_token '{' '\n' NIZ_NAREDBIB '}' { 
+    Naredba *naredba = new UslovNaredba($3, $7, $12);
+    naredba->izvrsi(); 
+    delete naredba;
+}
+
+
+NIZ_NAREDBIB: NIZ_NAREDBIB NAREDBAB '\n' { 
+    cout << "OVDE SAM" << endl;
+    $1->push_back($2);
+    $$ = $1;
+}
+| {
+    $$ = new vector<Naredba*>();
+}
+
+NAREDBAB: print_token '(' id ')' {
+    $$ = new ANaredba(*mapaa[*$3], *$3);
+    delete $3;
+}
+| print_token '(' string_literal ')' {
+    $$ = new SNaredba(*$3);
+    delete $3; 
+}
+
+
+NIZ_DODELA: DODELA ',' NIZ_DODELA
+| DODELA
+
+DODELA: id '=' E { 
+    if (mapac.find(*$1) != mapac.end()) {
+        delete mapac[*$1];
+    }
+
+    mapac[*$1] = $3;
+    delete $1;
+}
+| id {
+    if (mapac.find(*$1) != mapac.end()) {
+        delete mapac[*$1];
+    }
+    mapac[*$1] = new Complex();
+    delete $1;
+}
+
+E: E '+' E {
+    $$ = new Complex(*$1 + *$3);
+    delete $1;
+    delete $3;
+}
+| E '-' E {
+    $$ = new Complex(*$1 - *$3);
+    delete $1;
+    delete $3;
+}
+| '(' konstanta ',' konstanta ')' {
+    $$ = new Complex($2, $4);
+}
+| konstanta '*' 'i' {
+    $$ = new Complex(0, $1);
+}
+| '(' E ')'  {
+    $$ = $2;
+}
+| '-' E %prec UNARNI_MINUS {
+    $$ = new Complex(-(*$2));
+    delete $2;
+}
+| id {
+    if (mapac.find(*$1) == mapac.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete $1;
+        exit(EXIT_FAILURE);
+    }
+    $$ = new Complex(*mapac[*$1]);
+
+    delete $1;
+}
+| konstanta {
+    $$ = new Complex($1, 0);
+}
+| E '.' conj_token '(' ')' {
+    $$ = new Complex($1->conjugate());
+    delete $1;
+}
+
+NIZ_DODELAB: DODELAB ',' NIZ_DODELAB
+| DODELAB
+
+DODELAB: id '=' EB { 
+    mapab[*$1] = $3;
+    delete $1;
+}
+| id {
+    mapab[*$1] = false;
+    delete $1;
+}
+
+EB: E jednako E {
+    $$ = (*$1 == *$3);
+    delete $1;
+    delete $3;
+}
+| E nejednako E {
+    $$ = !(*$1 == *$3);
+    delete $1;
+    delete $3;
+}
+| id {
+    if (mapab.find(*$1) == mapab.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete $1;
+        exit(EXIT_FAILURE);
+    }
+    $$ = mapab[*$1];
+    delete $1;
+}
+
+NIZ_BROJEVA: NIZ_BROJEVAP { $$ = $1; }
+|  {
+    $$ = new vector<Complex>();
+}
+
+NIZ_BROJEVAP: NIZ_BROJEVAP ',' E {
+    $1->push_back(*$3);
+    $$ = $1;
+    delete $3;
+}
+| E {
+    $$ = new vector<Complex>();
+    $$->push_back(*$1);
+
+    delete $1;
+}
+
+%%
+
+int main() {
+    yyparse();
+
+    for (auto &kv : mapaa) {
+        delete kv.second;
+    }
+    for (auto &kv : mapac) {
+        delete kv.second;
+    }
+}
