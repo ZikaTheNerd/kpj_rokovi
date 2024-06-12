@@ -4,6 +4,7 @@
 # Ignore all .tab.hpp files in all directories
 *.tab.*
 lex.yy.c
+*.output
 
 izvrsni
 

@@ -1,9 +1,0 @@
-# Ignore all object files in all directories
-*.o
-
-# Ignore all .tab.hpp files in all directories
-*.tab.*
-lex.yy.c
-
-izvrsni
-
