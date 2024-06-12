@@ -95,7 +95,6 @@ NAREDBA: complex_tip NIZ_DODELA
 
 
 NIZ_NAREDBIB: NIZ_NAREDBIB NAREDBAB '\n' { 
-    cout << "OVDE SAM" << endl;
     $1->push_back($2);
     $$ = $1;
 }
