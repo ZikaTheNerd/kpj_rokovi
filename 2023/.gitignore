@@ -2,7 +2,8 @@
 *.o
 
 # Ignore all .tab.hpp files in all directories
-*.tab.hpp
+*.tab.*
+lex.yy.c
 
 izvrsni
 
