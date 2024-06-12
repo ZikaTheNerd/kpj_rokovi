@@ -67,29 +67,31 @@
 
 
 /* First part of user prologue.  */
-#line 1 "parser.ypp"
+#line 2 "parser.ypp"
 
 
 #include <iostream>
+#include <cstdlib>
 #include <map>
 #include <vector>
-#include <cstdlib>
-
-#include "utils.hpp"
+#include "naredbe.hpp"
+#include "complex.hpp"
 
 using namespace std;
 
+extern int yylex();
+
 void yyerror(const char *msg) {
-    cerr << msg << endl;
+    cerr << "Sintaksicka greska: " << msg;
     exit(EXIT_FAILURE);
 }
 
-extern int yylex();
+map<string, Complex*> mapac;
+map<string, bool> mapab;
+map<string, vector<Complex>*> mapaa;
 
-map<string, vector<double>*> mapa;
 
-
-#line 93 "parser.tab.cpp"
+#line 95 "parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -120,33 +122,45 @@ enum yysymbol_kind_t
   YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
   YYSYMBOL_YYerror = 1,                    /* error  */
   YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
-  YYSYMBOL_vektor_tip = 3,                 /* vektor_tip  */
-  YYSYMBOL_print_token = 4,                /* print_token  */
-  YYSYMBOL_dupl_token = 5,                 /* dupl_token  */
-  YYSYMBOL_coord_token = 6,                /* coord_token  */
-  YYSYMBOL_konstanta = 7,                  /* konstanta  */
-  YYSYMBOL_id = 8,                         /* id  */
-  YYSYMBOL_9_ = 9,                         /* '+'  */
-  YYSYMBOL_10_ = 10,                       /* '-'  */
-  YYSYMBOL_11_ = 11,                       /* '*'  */
-  YYSYMBOL_12_x_ = 12,                     /* 'x'  */
-  YYSYMBOL_13_ = 13,                       /* '.'  */
+  YYSYMBOL_complex_tip = 3,                /* complex_tip  */
+  YYSYMBOL_array_tip = 4,                  /* array_tip  */
+  YYSYMBOL_bool_tip = 5,                   /* bool_tip  */
+  YYSYMBOL_print_token = 6,                /* print_token  */
+  YYSYMBOL_else_token = 7,                 /* else_token  */
+  YYSYMBOL_if_token = 8,                   /* if_token  */
+  YYSYMBOL_conj_token = 9,                 /* conj_token  */
+  YYSYMBOL_nejednako = 10,                 /* nejednako  */
+  YYSYMBOL_jednako = 11,                   /* jednako  */
+  YYSYMBOL_id = 12,                        /* id  */
+  YYSYMBOL_konstanta = 13,                 /* konstanta  */
   YYSYMBOL_UNARNI_MINUS = 14,              /* UNARNI_MINUS  */
-  YYSYMBOL_15_ = 15,                       /* ';'  */
-  YYSYMBOL_16_ = 16,                       /* '('  */
-  YYSYMBOL_17_ = 17,                       /* ')'  */
-  YYSYMBOL_18_ = 18,                       /* '='  */
-  YYSYMBOL_19_ = 19,                       /* ','  */
-  YYSYMBOL_20_ = 20,                       /* '{'  */
-  YYSYMBOL_21_ = 21,                       /* '}'  */
-  YYSYMBOL_YYACCEPT = 22,                  /* $accept  */
-  YYSYMBOL_NIZ_NAREDBI = 23,               /* NIZ_NAREDBI  */
-  YYSYMBOL_NAREDBA = 24,                   /* NAREDBA  */
-  YYSYMBOL_NIZ_DEKLARACIJA = 25,           /* NIZ_DEKLARACIJA  */
-  YYSYMBOL_DODELA = 26,                    /* DODELA  */
-  YYSYMBOL_E = 27,                         /* E  */
-  YYSYMBOL_NIZ_BROJEVA = 28,               /* NIZ_BROJEVA  */
-  YYSYMBOL_NIZ_BROJEVAP = 29               /* NIZ_BROJEVAP  */
+  YYSYMBOL_string_literal = 15,            /* string_literal  */
+  YYSYMBOL_16_ = 16,                       /* '+'  */
+  YYSYMBOL_17_ = 17,                       /* '-'  */
+  YYSYMBOL_18_ = 18,                       /* '.'  */
+  YYSYMBOL_19_n_ = 19,                     /* '\n'  */
+  YYSYMBOL_20_ = 20,                       /* '('  */
+  YYSYMBOL_21_ = 21,                       /* ')'  */
+  YYSYMBOL_22_ = 22,                       /* '|'  */
+  YYSYMBOL_23_ = 23,                       /* '='  */
+  YYSYMBOL_24_ = 24,                       /* '{'  */
+  YYSYMBOL_25_ = 25,                       /* '}'  */
+  YYSYMBOL_26_ = 26,                       /* ','  */
+  YYSYMBOL_27_ = 27,                       /* '*'  */
+  YYSYMBOL_28_i_ = 28,                     /* 'i'  */
+  YYSYMBOL_YYACCEPT = 29,                  /* $accept  */
+  YYSYMBOL_NIZ_NAREDBI = 30,               /* NIZ_NAREDBI  */
+  YYSYMBOL_NAREDBA = 31,                   /* NAREDBA  */
+  YYSYMBOL_NIZ_NAREDBIB = 32,              /* NIZ_NAREDBIB  */
+  YYSYMBOL_NAREDBAB = 33,                  /* NAREDBAB  */
+  YYSYMBOL_NIZ_DODELA = 34,                /* NIZ_DODELA  */
+  YYSYMBOL_DODELA = 35,                    /* DODELA  */
+  YYSYMBOL_E = 36,                         /* E  */
+  YYSYMBOL_NIZ_DODELAB = 37,               /* NIZ_DODELAB  */
+  YYSYMBOL_DODELAB = 38,                   /* DODELAB  */
+  YYSYMBOL_EB = 39,                        /* EB  */
+  YYSYMBOL_NIZ_BROJEVA = 40,               /* NIZ_BROJEVA  */
+  YYSYMBOL_NIZ_BROJEVAP = 41               /* NIZ_BROJEVAP  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -472,21 +486,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  19
+#define YYFINAL  25
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   53
+#define YYLAST   108
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  22
+#define YYNTOKENS  29
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  8
+#define YYNNTS  13
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  24
+#define YYNRULES  38
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  49
+#define YYNSTATES  89
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   264
+#define YYMAXUTOK   270
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -501,18 +515,18 @@ union yyalloc
 static const yytype_int8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+      19,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+      20,    21,    27,    16,    26,    17,    18,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,    23,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      16,    17,    11,     9,    19,    10,    13,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    15,
-       2,    18,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,    28,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      12,     2,     2,    20,     2,    21,     2,     2,     2,     2,
+       2,     2,     2,    24,    22,    25,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -526,16 +540,18 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,    14
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+      15
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    48,    48,    49,    51,    52,    53,    57,    66,    67,
-      69,    73,    79,    85,    91,    94,    98,   107,   112,   127,
-     132,   137,   138,   140,   141
+       0,    67,    67,    68,    70,    71,    81,    82,    86,    87,
+      90,    97,   102,   106,   110,   116,   117,   119,   127,   135,
+     140,   145,   148,   151,   154,   158,   168,   171,   176,   177,
+     179,   183,   188,   193,   198,   208,   209,   213,   218
 };
 #endif
 
@@ -551,11 +567,13 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "\"end of file\"", "error", "\"invalid token\"", "vektor_tip",
-  "print_token", "dupl_token", "coord_token", "konstanta", "id", "'+'",
-  "'-'", "'*'", "'x'", "'.'", "UNARNI_MINUS", "';'", "'('", "')'", "'='",
-  "','", "'{'", "'}'", "$accept", "NIZ_NAREDBI", "NAREDBA",
-  "NIZ_DEKLARACIJA", "DODELA", "E", "NIZ_BROJEVA", "NIZ_BROJEVAP", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "complex_tip",
+  "array_tip", "bool_tip", "print_token", "else_token", "if_token",
+  "conj_token", "nejednako", "jednako", "id", "konstanta", "UNARNI_MINUS",
+  "string_literal", "'+'", "'-'", "'.'", "'\\n'", "'('", "')'", "'|'",
+  "'='", "'{'", "'}'", "','", "'*'", "'i'", "$accept", "NIZ_NAREDBI",
+  "NAREDBA", "NIZ_NAREDBIB", "NAREDBAB", "NIZ_DODELA", "DODELA", "E",
+  "NIZ_DODELAB", "DODELAB", "EB", "NIZ_BROJEVA", "NIZ_BROJEVAP", YY_NULLPTR
 };
 
 static const char *
@@ -565,12 +583,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-14)
+#define YYPACT_NINF (-15)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-1)
+#define YYTABLE_NINF (-35)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -579,11 +597,15 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       3,    -5,     1,   -13,    -6,     0,    22,     5,    15,     8,
-     -14,    12,    -6,    -6,   -14,   -14,   -14,    18,    21,   -14,
-       3,    -6,    -6,    -6,    30,    -6,    -5,    25,    20,    10,
-     -14,    34,   -14,    25,    25,    25,    26,    27,    28,    20,
-     -14,   -14,    29,    31,    37,   -14,   -14,    32,   -14
+      -1,     2,    18,    21,   -14,    -3,    19,    12,    22,   -15,
+      26,   -15,    27,    45,    46,   -15,    44,    25,    65,    19,
+     -15,    47,    19,    34,    40,   -15,    -1,     2,    28,    25,
+      21,    29,     8,    51,    53,    49,    48,    57,    -4,    43,
+      19,    19,    68,   -15,   -15,   -15,    19,   -15,   -15,    19,
+      19,    54,    58,   -15,    67,   -15,    57,    57,    61,    49,
+      59,    56,    49,    49,    64,   -15,    66,    69,   -15,    19,
+     -15,   -15,   -15,    49,     3,    71,    78,    70,    -7,    62,
+     -15,    72,    73,    76,   -15,   -15,   -15,     4,   -15
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -591,23 +613,29 @@ static const yytype_int8 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       3,     0,     0,    16,     0,    22,     0,     0,     5,    10,
-       4,     9,     0,     0,    16,    15,    24,     0,    21,     1,
-       3,     0,     0,     0,     0,     0,     0,    17,     7,     0,
-      14,     0,     2,    12,    13,    18,     0,     0,     0,    11,
-       8,    23,     0,     0,     0,     6,    20,     0,    19
+       3,     0,     0,     0,     0,    18,     0,     0,     0,     6,
+      18,     4,    16,     0,    31,     8,    29,     0,     0,     0,
+      25,    26,     0,     0,     0,     1,     3,     0,     0,     0,
+       0,    25,     0,     0,     0,    17,     0,    24,    26,     0,
+       0,     0,     0,     7,     2,    15,    36,    30,    28,     0,
+       0,     0,     0,    22,     0,    23,    19,    20,     0,    38,
+       0,    35,    33,    32,     0,     5,     0,     0,     9,     0,
+      12,    21,    27,    37,     0,     0,     0,     0,     0,     0,
+      11,     0,     0,     0,    13,    14,    12,     0,    10
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -14,    33,   -14,    24,   -14,    -4,   -14,   -14
+     -15,    74,   -15,     6,   -15,    75,     0,    -6,    77,   -15,
+      79,   -15,   -15
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     6,     7,    10,    11,     8,    17,    18
+       0,     7,     8,    74,    77,    11,     9,    32,    15,    16,
+      33,    60,    61
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -615,49 +643,65 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      15,     2,    14,     9,     4,    13,     1,    16,    27,    28,
-       2,     3,    12,     4,     5,    37,    38,    33,    34,    35,
-      20,    39,    19,     5,    21,    22,    25,    23,    24,    21,
-      22,    26,    23,    29,    36,    37,    38,    23,    29,    30,
-      31,    41,    42,    43,    44,    47,    45,     0,    46,    48,
-      40,     0,     0,    32
+      24,    12,     1,     2,     3,    81,    17,     4,    82,    75,
+      75,     5,    25,    35,    10,    18,    37,    39,    49,    50,
+      19,     6,    54,    36,    40,    41,    42,    12,    76,    88,
+      13,    20,    21,    14,    56,    57,    22,    31,    21,    23,
+      59,    26,    22,    62,    63,    23,    20,    38,   -34,    19,
+     -34,    22,    46,    27,    23,   -34,    40,    41,    42,    40,
+      41,    42,    43,    73,    55,    40,    41,    42,    28,    29,
+      30,    34,    51,    52,    36,    42,    53,    58,    64,    65,
+      66,    67,    69,    70,    68,    79,    83,    71,     0,    80,
+      72,    78,    87,    84,    85,    86,     0,     0,     0,     0,
+      44,     0,    45,     0,     0,     0,     0,    48,    47
 };
 
 static const yytype_int8 yycheck[] =
 {
-       4,     7,     8,     8,    10,    18,     3,     7,    12,    13,
-       7,     8,    11,    10,    20,     5,     6,    21,    22,    23,
-      15,    25,     0,    20,     9,    10,    18,    12,    13,     9,
-      10,    19,    12,    13,     4,     5,     6,    12,    13,    21,
-      19,     7,    16,    16,    16,     8,    17,    -1,    17,    17,
-      26,    -1,    -1,    20
+       6,     1,     3,     4,     5,    12,    20,     8,    15,     6,
+       6,    12,     0,    19,    12,    18,    22,    23,    10,    11,
+      23,    22,    26,    27,    16,    17,    18,    27,    25,    25,
+      12,    12,    13,    12,    40,    41,    17,    12,    13,    20,
+      46,    19,    17,    49,    50,    20,    12,    13,    19,    23,
+      21,    17,    24,    26,    20,    26,    16,    17,    18,    16,
+      17,    18,    22,    69,    21,    16,    17,    18,    23,    23,
+      26,     6,    21,    20,    27,    18,    28,     9,    24,    21,
+      13,    20,    26,    19,    25,     7,    24,    21,    -1,    19,
+      21,    20,    86,    21,    21,    19,    -1,    -1,    -1,    -1,
+      26,    -1,    27,    -1,    -1,    -1,    -1,    30,    29
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     3,     7,     8,    10,    20,    23,    24,    27,     8,
-      25,    26,    11,    18,     8,    27,     7,    28,    29,     0,
-      15,     9,    10,    12,    13,    18,    19,    27,    27,    13,
-      21,    19,    23,    27,    27,    27,     4,     5,     6,    27,
-      25,     7,    16,    16,    16,    17,    17,     8,    17
+       0,     3,     4,     5,     8,    12,    22,    30,    31,    35,
+      12,    34,    35,    12,    12,    37,    38,    20,    18,    23,
+      12,    13,    17,    20,    36,     0,    19,    26,    23,    23,
+      26,    12,    36,    39,     6,    36,    27,    36,    13,    36,
+      16,    17,    18,    22,    30,    34,    24,    39,    37,    10,
+      11,    21,    20,    28,    26,    21,    36,    36,     9,    36,
+      40,    41,    36,    36,    24,    21,    13,    20,    25,    26,
+      19,    21,    21,    36,    32,     6,    25,    33,    20,     7,
+      19,    12,    15,    24,    21,    21,    19,    32,    25
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    22,    23,    23,    24,    24,    24,    24,    25,    25,
-      26,    26,    27,    27,    27,    27,    27,    27,    27,    27,
-      27,    28,    28,    29,    29
+       0,    29,    30,    30,    31,    31,    31,    31,    31,    31,
+      31,    32,    32,    33,    33,    34,    34,    35,    35,    36,
+      36,    36,    36,    36,    36,    36,    36,    36,    37,    37,
+      38,    38,    39,    39,    39,    40,    40,    41,    41
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     3,     0,     2,     1,     5,     3,     3,     1,
-       1,     3,     3,     3,     3,     2,     1,     3,     3,     6,
-       5,     1,     0,     3,     1
+       0,     2,     3,     0,     2,     5,     1,     3,     2,     6,
+      13,     3,     0,     4,     4,     3,     1,     3,     1,     3,
+       3,     5,     3,     3,     2,     1,     1,     5,     3,     1,
+       3,     1,     3,     3,     1,     1,     0,     3,     1
 };
 
 
@@ -1120,181 +1164,283 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 5: /* NAREDBA: E  */
-#line 52 "parser.ypp"
-        { cout << *(yyvsp[0].v) << endl; delete (yyvsp[0].v); }
-#line 1127 "parser.tab.cpp"
-    break;
-
-  case 6: /* NAREDBA: E '.' print_token '(' ')'  */
-#line 53 "parser.ypp"
-                                                   { 
-        cout << *(yyvsp[-4].v) << endl;
-        delete (yyvsp[-4].v);
+  case 5: /* NAREDBA: id '.' print_token '(' ')'  */
+#line 71 "parser.ypp"
+                             {
+    if (mapac.find(*(yyvsp[-4].s)) == mapac.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete (yyvsp[-4].s);
+        exit(EXIT_FAILURE);
     }
-#line 1136 "parser.tab.cpp"
-    break;
 
-  case 7: /* NAREDBA: id '=' E  */
-#line 57 "parser.ypp"
-               {
-        if (mapa.find(*(yyvsp[-2].s)) != mapa.end()) {
-            delete mapa[*(yyvsp[-2].s)];
-        }
-        mapa[*(yyvsp[-2].s)] = new vector<double>(*(yyvsp[0].v));
-        delete (yyvsp[-2].s);
-        delete (yyvsp[0].v);
-    }
-#line 1149 "parser.tab.cpp"
-    break;
-
-  case 10: /* DODELA: id  */
-#line 69 "parser.ypp"
-           { 
-    mapa[*(yyvsp[0].s)] = new vector<double>(); 
-    delete (yyvsp[0].s); 
+    mapac[*(yyvsp[-4].s)]->ispis();
+    delete (yyvsp[-4].s);
 }
-#line 1158 "parser.tab.cpp"
+#line 1180 "parser.tab.cpp"
     break;
 
-  case 11: /* DODELA: id '=' E  */
-#line 73 "parser.ypp"
-               {
-        mapa[*(yyvsp[-2].s)] = new vector<double>(*(yyvsp[0].v));
-        delete (yyvsp[-2].s);
-        delete (yyvsp[0].v);
-    }
-#line 1168 "parser.tab.cpp"
-    break;
-
-  case 12: /* E: E '+' E  */
-#line 79 "parser.ypp"
-           {
-    (yyval.v) = new vector<double>(saberi_vektore(*(yyvsp[-2].v), *(yyvsp[0].v)));
-
-    delete (yyvsp[-2].v);
-    delete (yyvsp[0].v);
+  case 7: /* NAREDBA: '|' E '|'  */
+#line 82 "parser.ypp"
+            {
+    cout << (yyvsp[-1].c)->abs() << endl;
+    delete (yyvsp[-1].c); 
 }
-#line 1179 "parser.tab.cpp"
+#line 1189 "parser.tab.cpp"
     break;
 
-  case 13: /* E: E '-' E  */
-#line 85 "parser.ypp"
-           {
-    (yyval.v) = new vector<double>(oduzmi_vektore(*(yyvsp[-2].v), *(yyvsp[0].v)));
-
-    delete (yyvsp[-2].v);
-    delete (yyvsp[0].v);
- }
-#line 1190 "parser.tab.cpp"
+  case 9: /* NAREDBA: array_tip id '=' '{' NIZ_BROJEVA '}'  */
+#line 87 "parser.ypp"
+                                       { 
+    mapaa[*(yyvsp[-4].s)] = (yyvsp[-1].v);
+}
+#line 1197 "parser.tab.cpp"
     break;
 
-  case 14: /* E: '{' NIZ_BROJEVA '}'  */
-#line 91 "parser.ypp"
-                       {
-    (yyval.v) = (yyvsp[-1].v);
- }
-#line 1198 "parser.tab.cpp"
-    break;
-
-  case 15: /* E: '-' E  */
-#line 94 "parser.ypp"
-                            {
-    (yyval.v) = new vector<double>(negativni(*(yyvsp[0].v)));
-    delete (yyvsp[0].v);
- }
+  case 10: /* NAREDBA: if_token '(' EB ')' '{' '\n' NIZ_NAREDBIB '}' else_token '{' '\n' NIZ_NAREDBIB '}'  */
+#line 90 "parser.ypp"
+                                                                                     { 
+    Naredba *naredba = new UslovNaredba((yyvsp[-10].b), (yyvsp[-6].vn), (yyvsp[-1].vn));
+    naredba->izvrsi(); 
+    delete naredba;
+}
 #line 1207 "parser.tab.cpp"
     break;
 
-  case 16: /* E: id  */
-#line 98 "parser.ypp"
-      {
-    if (mapa.find(*(yyvsp[0].s)) == mapa.end()) {
-        cerr << "PROMENJLJIVA NIJE TUUUU!" << endl;
-        delete (yyvsp[0].s);
-        exit(EXIT_FAILURE);
-    }
-    (yyval.v) = new vector<double>(*mapa[*(yyvsp[0].s)]);
-    delete (yyvsp[0].s);
- }
-#line 1221 "parser.tab.cpp"
-    break;
-
-  case 17: /* E: konstanta '*' E  */
-#line 107 "parser.ypp"
-                  {
-    (yyval.v) = new vector<double>(pomnozi_skalarno((yyvsp[-2].d), *(yyvsp[0].v)));
-
-    delete (yyvsp[0].v);
+  case 11: /* NIZ_NAREDBIB: NIZ_NAREDBIB NAREDBAB '\n'  */
+#line 97 "parser.ypp"
+                                         { 
+    cout << "OVDE SAM" << endl;
+    (yyvsp[-2].vn)->push_back((yyvsp[-1].n));
+    (yyval.vn) = (yyvsp[-2].vn);
 }
-#line 1231 "parser.tab.cpp"
+#line 1217 "parser.tab.cpp"
     break;
 
-  case 18: /* E: E 'x' E  */
-#line 112 "parser.ypp"
-          {
-    if ((yyvsp[-2].v)->size() != 3 || (yyvsp[0].v)->size() != 3) {
-        cerr << "VEKTORI NISU ODG DIMENZIJA" << endl;
-
-        delete (yyvsp[-2].v);
-        delete (yyvsp[0].v);
-        exit(EXIT_FAILURE);
-
-    }
-
-    vector<double> rez = vek_proizvod(*(yyvsp[-2].v), *(yyvsp[0].v));
-    (yyval.v) = new vector<double>(rez);
-    delete (yyvsp[-2].v);
-    delete (yyvsp[0].v);
+  case 12: /* NIZ_NAREDBIB: %empty  */
+#line 102 "parser.ypp"
+  {
+    (yyval.vn) = new vector<Naredba*>();
 }
-#line 1251 "parser.tab.cpp"
+#line 1225 "parser.tab.cpp"
     break;
 
-  case 19: /* E: E '.' coord_token '(' id ')'  */
-#line 127 "parser.ypp"
-                               {
-    (yyval.v) = new vector<double>(koord_mnozi(*(yyvsp[-5].v), *mapa[*(yyvsp[-1].s)]));
-    delete (yyvsp[-5].v);
+  case 13: /* NAREDBAB: print_token '(' id ')'  */
+#line 106 "parser.ypp"
+                                 {
+    (yyval.n) = new ANaredba(*mapaa[*(yyvsp[-1].s)], *(yyvsp[-1].s));
     delete (yyvsp[-1].s);
 }
-#line 1261 "parser.tab.cpp"
+#line 1234 "parser.tab.cpp"
     break;
 
-  case 20: /* E: E '.' dupl_token '(' ')'  */
-#line 132 "parser.ypp"
-                           {
-    (yyval.v) = new vector<double>(pomnozi_skalarno(2, *(yyvsp[-4].v)));
-    delete (yyvsp[-4].v);
+  case 14: /* NAREDBAB: print_token '(' string_literal ')'  */
+#line 110 "parser.ypp"
+                                     {
+    (yyval.n) = new SNaredba(*(yyvsp[-1].s));
+    delete (yyvsp[-1].s); 
 }
-#line 1270 "parser.tab.cpp"
+#line 1243 "parser.tab.cpp"
     break;
 
-  case 21: /* NIZ_BROJEVA: NIZ_BROJEVAP  */
-#line 137 "parser.ypp"
-                          { (yyval.v) = (yyvsp[0].v); }
-#line 1276 "parser.tab.cpp"
+  case 17: /* DODELA: id '=' E  */
+#line 119 "parser.ypp"
+                 { 
+    if (mapac.find(*(yyvsp[-2].s)) != mapac.end()) {
+        delete mapac[*(yyvsp[-2].s)];
+    }
+
+    mapac[*(yyvsp[-2].s)] = (yyvsp[0].c);
+    delete (yyvsp[-2].s);
+}
+#line 1256 "parser.tab.cpp"
     break;
 
-  case 22: /* NIZ_BROJEVA: %empty  */
-#line 138 "parser.ypp"
-              { (yyval.v) = new vector<double>();}
-#line 1282 "parser.tab.cpp"
+  case 18: /* DODELA: id  */
+#line 127 "parser.ypp"
+     {
+    if (mapac.find(*(yyvsp[0].s)) != mapac.end()) {
+        delete mapac[*(yyvsp[0].s)];
+    }
+    mapac[*(yyvsp[0].s)] = new Complex();
+    delete (yyvsp[0].s);
+}
+#line 1268 "parser.tab.cpp"
     break;
 
-  case 23: /* NIZ_BROJEVAP: NIZ_BROJEVAP ',' konstanta  */
+  case 19: /* E: E '+' E  */
+#line 135 "parser.ypp"
+           {
+    (yyval.c) = new Complex(*(yyvsp[-2].c) + *(yyvsp[0].c));
+    delete (yyvsp[-2].c);
+    delete (yyvsp[0].c);
+}
+#line 1278 "parser.tab.cpp"
+    break;
+
+  case 20: /* E: E '-' E  */
 #line 140 "parser.ypp"
-                                         { (yyval.v) = (yyvsp[-2].v); (yyval.v)->push_back((yyvsp[0].d));}
+          {
+    (yyval.c) = new Complex(*(yyvsp[-2].c) - *(yyvsp[0].c));
+    delete (yyvsp[-2].c);
+    delete (yyvsp[0].c);
+}
 #line 1288 "parser.tab.cpp"
     break;
 
-  case 24: /* NIZ_BROJEVAP: konstanta  */
-#line 141 "parser.ypp"
-                        { (yyval.v) = new vector<double>(); (yyval.v)->push_back((yyvsp[0].d)); }
-#line 1294 "parser.tab.cpp"
+  case 21: /* E: '(' konstanta ',' konstanta ')'  */
+#line 145 "parser.ypp"
+                                  {
+    (yyval.c) = new Complex((yyvsp[-3].i), (yyvsp[-1].i));
+}
+#line 1296 "parser.tab.cpp"
+    break;
+
+  case 22: /* E: konstanta '*' 'i'  */
+#line 148 "parser.ypp"
+                    {
+    (yyval.c) = new Complex(0, (yyvsp[-2].i));
+}
+#line 1304 "parser.tab.cpp"
+    break;
+
+  case 23: /* E: '(' E ')'  */
+#line 151 "parser.ypp"
+             {
+    (yyval.c) = (yyvsp[-1].c);
+}
+#line 1312 "parser.tab.cpp"
+    break;
+
+  case 24: /* E: '-' E  */
+#line 154 "parser.ypp"
+                           {
+    (yyval.c) = new Complex(-(*(yyvsp[0].c)));
+    delete (yyvsp[0].c);
+}
+#line 1321 "parser.tab.cpp"
+    break;
+
+  case 25: /* E: id  */
+#line 158 "parser.ypp"
+     {
+    if (mapac.find(*(yyvsp[0].s)) == mapac.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete (yyvsp[0].s);
+        exit(EXIT_FAILURE);
+    }
+    (yyval.c) = new Complex(*mapac[*(yyvsp[0].s)]);
+
+    delete (yyvsp[0].s);
+}
+#line 1336 "parser.tab.cpp"
+    break;
+
+  case 26: /* E: konstanta  */
+#line 168 "parser.ypp"
+            {
+    (yyval.c) = new Complex((yyvsp[0].i), 0);
+}
+#line 1344 "parser.tab.cpp"
+    break;
+
+  case 27: /* E: E '.' conj_token '(' ')'  */
+#line 171 "parser.ypp"
+                           {
+    (yyval.c) = new Complex((yyvsp[-4].c)->conjugate());
+    delete (yyvsp[-4].c);
+}
+#line 1353 "parser.tab.cpp"
+    break;
+
+  case 30: /* DODELAB: id '=' EB  */
+#line 179 "parser.ypp"
+                   { 
+    mapab[*(yyvsp[-2].s)] = (yyvsp[0].b);
+    delete (yyvsp[-2].s);
+}
+#line 1362 "parser.tab.cpp"
+    break;
+
+  case 31: /* DODELAB: id  */
+#line 183 "parser.ypp"
+     {
+    mapab[*(yyvsp[0].s)] = false;
+    delete (yyvsp[0].s);
+}
+#line 1371 "parser.tab.cpp"
+    break;
+
+  case 32: /* EB: E jednako E  */
+#line 188 "parser.ypp"
+                {
+    (yyval.b) = (*(yyvsp[-2].c) == *(yyvsp[0].c));
+    delete (yyvsp[-2].c);
+    delete (yyvsp[0].c);
+}
+#line 1381 "parser.tab.cpp"
+    break;
+
+  case 33: /* EB: E nejednako E  */
+#line 193 "parser.ypp"
+                {
+    (yyval.b) = !(*(yyvsp[-2].c) == *(yyvsp[0].c));
+    delete (yyvsp[-2].c);
+    delete (yyvsp[0].c);
+}
+#line 1391 "parser.tab.cpp"
+    break;
+
+  case 34: /* EB: id  */
+#line 198 "parser.ypp"
+     {
+    if (mapab.find(*(yyvsp[0].s)) == mapab.end()) {
+        cerr << "Promenljiva nije definisana" << endl;
+        delete (yyvsp[0].s);
+        exit(EXIT_FAILURE);
+    }
+    (yyval.b) = mapab[*(yyvsp[0].s)];
+    delete (yyvsp[0].s);
+}
+#line 1405 "parser.tab.cpp"
+    break;
+
+  case 35: /* NIZ_BROJEVA: NIZ_BROJEVAP  */
+#line 208 "parser.ypp"
+                          { (yyval.v) = (yyvsp[0].v); }
+#line 1411 "parser.tab.cpp"
+    break;
+
+  case 36: /* NIZ_BROJEVA: %empty  */
+#line 209 "parser.ypp"
+   {
+    (yyval.v) = new vector<Complex>();
+}
+#line 1419 "parser.tab.cpp"
+    break;
+
+  case 37: /* NIZ_BROJEVAP: NIZ_BROJEVAP ',' E  */
+#line 213 "parser.ypp"
+                                 {
+    (yyvsp[-2].v)->push_back(*(yyvsp[0].c));
+    (yyval.v) = (yyvsp[-2].v);
+    delete (yyvsp[0].c);
+}
+#line 1429 "parser.tab.cpp"
+    break;
+
+  case 38: /* NIZ_BROJEVAP: E  */
+#line 218 "parser.ypp"
+    {
+    (yyval.v) = new vector<Complex>();
+    (yyval.v)->push_back(*(yyvsp[0].c));
+
+    delete (yyvsp[0].c);
+}
+#line 1440 "parser.tab.cpp"
     break;
 
 
-#line 1298 "parser.tab.cpp"
+#line 1444 "parser.tab.cpp"
 
       default: break;
     }
@@ -1487,14 +1633,16 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 143 "parser.ypp"
+#line 225 "parser.ypp"
 
 
 int main() {
     yyparse();
-    for (auto kv : mapa) {
+
+    for (auto &kv : mapaa) {
         delete kv.second;
     }
-
-    return 0;
+    for (auto &kv : mapac) {
+        delete kv.second;
+    }
 }

@@ -54,13 +54,19 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    vektor_tip = 258,              /* vektor_tip  */
-    print_token = 259,             /* print_token  */
-    dupl_token = 260,              /* dupl_token  */
-    coord_token = 261,             /* coord_token  */
-    konstanta = 262,               /* konstanta  */
-    id = 263,                      /* id  */
-    UNARNI_MINUS = 264             /* UNARNI_MINUS  */
+    complex_tip = 258,             /* complex_tip  */
+    array_tip = 259,               /* array_tip  */
+    bool_tip = 260,                /* bool_tip  */
+    print_token = 261,             /* print_token  */
+    else_token = 262,              /* else_token  */
+    if_token = 263,                /* if_token  */
+    conj_token = 264,              /* conj_token  */
+    nejednako = 265,               /* nejednako  */
+    jednako = 266,                 /* jednako  */
+    id = 267,                      /* id  */
+    konstanta = 268,               /* konstanta  */
+    UNARNI_MINUS = 269,            /* UNARNI_MINUS  */
+    string_literal = 270           /* string_literal  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -69,13 +75,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "parser.ypp"
+#line 26 "parser.ypp"
 
-    vector<double> *v;
-    double          d;
-    string          *s;
+    Complex                 *c;
+    bool                    b;
+    vector<Complex>        *v;
+    vector<Naredba*>        *vn;
+    Naredba                 *n;
+    int                     i;
+    string                  *s;
 
-#line 79 "parser.tab.hpp"
+#line 89 "parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
