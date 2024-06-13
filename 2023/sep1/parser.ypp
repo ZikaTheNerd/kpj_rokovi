@@ -1,0 +1,107 @@
+%{
+
+#include <iostream>
+#include <cstdlib>
+#include <map>
+#include <string>
+#include "RegIzraz.hpp"
+
+extern int yylex();
+
+#include "parser.tab.hpp"
+
+void yyerror(const char *msg) {
+    cerr << msg << endl;
+    exit(EXIT_FAILURE);
+}
+
+map<string, RegIzraz* > mapar;
+map<string, string> mapas;
+
+%}
+
+%union {
+    string          *s;
+    RegIzraz        *r;
+    char            c;
+}
+
+%token  <s>     karak_klasa
+%token  <s>     string_literal
+%token          op_dodele
+%token  <s>     id_izraz
+%token  <s>     id_string
+%token  <c>     karakter;
+%token          print_token;
+
+%type   <r>     RE
+%type   <r>     RET
+%type   <r>     REF
+
+%%
+
+NIZ_NAREDBI: NAREDBA ';' NIZ_NAREDBI
+|
+;
+NAREDBA: id_izraz op_dodele RE {
+    if (mapar.find(*$1) != mapar.end()) {
+        delete mapar[*$1];
+    }
+    mapar[*$1] = $3;
+    delete $1;
+}
+| print_token '(' RE ')' {
+    $3->ispis();
+    cout << endl;
+
+    delete $3;
+}
+;
+RE: RE '|' RET {
+    $$ = new Disjunkcija($1, $3);
+}
+| RET {
+    $$ = $1;
+}
+;
+RET: RET REF {
+    $$ = new Konkatenacija($1, $2);
+}
+| REF {
+    $$ = $1;
+}
+;
+REF: karakter {
+    $$ = new Konstanta($1);
+}
+| '(' RE ')' {
+    $$ = $2;
+}
+| REF '*' {
+    $$ = new Zvezda($1);
+}
+| REF '+' {
+    $$ = new Plus($1);
+}
+| id_izraz {
+    if (mapar.find(*$1) == mapar.end()) {
+        cerr << "Promenljiva nije def!" << endl;
+        delete $1;
+        exit(EXIT_FAILURE);
+    }
+
+    $$ = mapar[*$1];
+    delete $1;
+}
+| karak_klasa {
+    $$ = new KarakKlasa(*$1);
+    delete $1;
+}
+;
+%%
+
+int main() {
+    yyparse();
+
+}
+
