@@ -29,6 +29,8 @@ using namespace std;
     return string_literal;
 }
 "print"             { return print_token; }
+"printString"       { return printstring_token; }
+"check"             { return check_token; }
 
 [ \t\n]             { }
 [^rs]               {
@@ -45,6 +47,8 @@ s[0-9]+             {
     yylval.s = new string(yytext);
     return id_string;
 }
+
+"#".*               { }
 .                   {
     cerr << "Leksicka greska: " << endl;
     exit(EXIT_FAILURE);

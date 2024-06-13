@@ -11,6 +11,7 @@ class RegIzraz {
 public:
     virtual ~RegIzraz() { };
     void virtual ispis() const = 0;
+    bool virtual check(const string &s) const = 0;
 };
 
 class Konstanta : public RegIzraz {
@@ -20,6 +21,7 @@ public:
         konst = string(1, c);
     };
     void ispis() const;
+    bool check(const string &s) const;
 private:
     string konst;
 };
@@ -29,6 +31,7 @@ public:
     ~KarakKlasa() = default;
     KarakKlasa(const string &s);
     void ispis() const;
+    bool check(const string &s) const;
 private:
     set<char> karakteri;
 };
@@ -38,6 +41,7 @@ public:
     ~Konkatenacija();
     Konkatenacija(RegIzraz *r1, RegIzraz *r2) : r1(r1), r2(r2) {}
     void ispis() const;
+    bool check(const string &s) const;
 private:
     RegIzraz *r1;
     RegIzraz *r2;
@@ -47,6 +51,7 @@ public:
     ~Disjunkcija();
     Disjunkcija(RegIzraz *r1, RegIzraz *r2) : r1(r1), r2(r2) {}
     void ispis() const;
+    bool check(const string &s) const;
 private:
     RegIzraz *r1;
     RegIzraz *r2;
@@ -56,6 +61,7 @@ public:
     ~Zvezda();
     Zvezda(RegIzraz *r) : r(r) {}
     void ispis() const;
+    bool check(const string &s) const;
 private:
     RegIzraz *r;
 };
@@ -64,6 +70,7 @@ public:
     ~Plus();
     Plus(RegIzraz *r) : r(r) {}
     void ispis() const;
+    bool check(const string &s) const;
 private:
     RegIzraz *r;
 };
